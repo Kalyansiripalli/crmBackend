@@ -7,8 +7,8 @@ import {
 import {
   validateRegister,
   validateLogin,
-} from '../middleware/validationMiddleware.js';
-import { protect } from '../middleware/authMiddleware.js';
+} from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authenticate.js';
 
 const router = express.Router();
 

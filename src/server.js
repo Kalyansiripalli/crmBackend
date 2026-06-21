@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
+import opportunityRoutes from './routes/opportunityRoutes.js';
 dotenv.config();
 
 // Connect to Database
@@ -17,6 +18,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'CRM Opportunity Tracker API is running' });

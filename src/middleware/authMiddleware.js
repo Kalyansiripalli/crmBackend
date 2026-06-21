@@ -1,42 +1,51 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+// Registration request validation middleware
+export const validateRegister = (req, res, next) => {
+  const { name, email, password } = req.body;
+  const errors = {};
 
-export const protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      // Get token from header
-      token = req.headers.authorization.split(' ')[1];
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Get user from the token, exclude password
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        res.status(401);
-        throw new Error('Not authorized, user not found');
-      }
-
-      next();
-    } catch (error) {
-      console.error(error);
-      res.status(401);
-      if (error.name === 'TokenExpiredError') {
-        next(new Error('Not authorized, token expired'));
-      } else {
-        next(new Error('Not authorized, token failed'));
-      }
-    }
+  if (!name || name.trim().length < 2) {
+    errors.name = 'Name must be at least 2 characters';
   }
 
-  if (!token) {
-    res.status(401);
-    next(new Error('Not authorized, no token provided'));
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  if (!email || !emailRegex.test(email)) {
+    errors.email = 'Please enter a valid email address';
   }
+
+  if (!password || password.length < 6) {
+    errors.password = 'Password must be at least 6 characters';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors,
+    });
+  }
+
+  next();
+};
+
+// Login request validation middleware
+export const validateLogin = (req, res, next) => {
+  const { email, password } = req.body;
+  const errors = {};
+
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  if (!email || !emailRegex.test(email)) {
+    errors.email = 'Please enter a valid email address';
+  }
+
+  if (!password || password.trim().length === 0) {
+    errors.password = 'Password is required';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors,
+    });
+  }
+
+  next();
 };
