@@ -31,7 +31,10 @@ export const createOpportunity = async (req, res, next) => {
       notes,
     });
 
-    res.status(201).json(opportunity);
+    res.status(201).json({
+      ...opportunity.toObject(),
+      isOwner: true,
+    });
   } catch (error) {
     next(error);
   }
@@ -44,7 +47,15 @@ export const getOpportunities = async (req, res, next) => {
       .populate('owner', 'name')
       .sort({ createdAt: -1 });
 
-    res.json(opportunities);
+    const opportunitiesWithOwnership = opportunities.map(opp => {
+      const oppObj = opp.toObject();
+      return {
+        ...oppObj,
+        isOwner: opp.owner && opp.owner._id.toString() === req.user._id.toString(),
+      };
+    });
+
+    res.json(opportunitiesWithOwnership);
   } catch (error) {
     next(error);
   }
@@ -67,7 +78,10 @@ export const getOpportunityById = async (req, res, next) => {
       throw new Error('Opportunity not found');
     }
 
-    res.json(opportunity);
+    res.json({
+      ...opportunity.toObject(),
+      isOwner: opportunity.owner && opportunity.owner._id.toString() === req.user._id.toString(),
+    });
   } catch (error) {
     next(error);
   }
@@ -116,7 +130,10 @@ export const updateOpportunity = async (req, res, next) => {
       { new: true, runValidators: true }
     ).populate('owner', 'name');
 
-    res.json(updatedOpportunity);
+    res.json({
+      ...updatedOpportunity.toObject(),
+      isOwner: true,
+    });
   } catch (error) {
     next(error);
   }
